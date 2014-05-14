@@ -1,0 +1,118 @@
+<!doctype html>
+<html>
+<head>
+<link href="/static/css/style.css" rel="stylesheet" type="text/css"></link>
+<link href="/static/css/jcarousel.responsive.css"  rel="stylesheet" type="text/css"></link>
+
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/static/js/jquery.js"></script>
+<script src="/static/js/jquery.jcarousel.min.js"></script>
+<script src="/static/js/jcarousel.responsive.js"></script>
+<script src="/static/js/jquery.jcarousel-control.min.js"></script>
+<script>
+        
+        var URL = window.location.protocol + "//" + window.location.host;
+        //console.log("Connecting to " + URL);
+        var socket = io.connect(URL);
+
+        // on connection to server, ask for user's name with an anonymous callback
+        /*
+        socket.on('connect', function(){
+                // call the server-side function 'adduser' and send one parameter (value of prompt)
+                socket.emit('adduser', prompt("What's your name?"));
+        });
+
+        // listener, whenever the server emits 'updatechat', this updates the chat body
+        socket.on('updatechat', function (username, data) {
+                $('#conversation').append('<b>'+username + ':</b> ' + data + '<br>');
+        });
+
+        // listener, whenever the server emits 'updateusers', this updates the username list
+        socket.on('updateusers', function(data) {
+                $('#users').empty();
+                $.each(data, function(key, value) {
+                        $('#users').append('<div>' + key + '</div>');
+                });
+        });
+*/      
+        
+        socket.on('connect', function(){
+                // call the server-side function 'adduser' and send one parameter (value of prompt)
+                socket.emit('mirror', 0);
+        });
+        socket.on('mirror', function(data){
+                var j = $('.jcarousel').data('jcarousel');
+                j.scroll(data, true)
+        })
+        socket.on('slide', function (data) {
+                console.log('received msg ' + data)
+                $('.jcarousel').jcarousel('scroll', data);
+        });
+        // on load of page
+        $(function(){
+                // when the client clicks SEND
+                $('.jcarousel').jcarousel({
+                    wrap: null
+                });
+
+                $('body').keyup(function(e){
+                    e.preventDefault;
+                    if (e.which===32){
+                         socket.emit('slide', '+=1');
+                    }
+                })
+                
+                $('.jcarousel-control-prev').click(function() {
+                    //$('.jcarousel').jcarousel('scroll', '-=1');                   
+                    socket.emit('slide', '-=1')
+                });
+
+                $('.jcarousel-control-next').click(function() {
+                    
+                    socket.emit('slide', '+=1')
+                    
+                });
+                $('#mirror').click(function(){
+                        var j = $('.jcarousel').data('jcarousel');
+                        var idx = j.first().index();
+                        socket.emit('mirror', idx)
+                })
+        });
+
+</script>
+<!--
+<div style="float:left;width:100px;border-right:1px solid black;height:300px;padding:10px;overflow:scroll-y;">
+        <b>USERS</b>
+        <div id="users"></div>
+</div>
+<div style="float:left;width:300px;height:250px;overflow:scroll-y;padding:10px;">
+        <div id="conversation"></div>
+        <input id="data" style="width:200px;" />
+        <input type="button" id="datasend" value="send" />
+</div>-->
+</head>
+<body>
+<div class="wrapper">
+<div class="jcarousel-wrapper">
+        <div class="jcarousel">
+            <ul>
+                <li><img src="/static/img/img1.jpg" alt="Image 1"></li>
+                <li><img src="/static/img/img2.jpg" alt="Image 2"></li>
+                <li><img src="/static/img/img3.jpg" alt="Image 3"></li>
+                <li><img src="/static/img/img4.jpg" alt="Image 4"></li>
+                <li><img src="/static/img/img5.jpg" alt="Image 5"></li>
+                <li><img src="/static/img/img6.jpg" alt="Image 6"></li>
+            </ul>
+        </div>
+
+        <a href="#" class="jcarousel-control-prev">&lsaquo;</a>
+        <a href="#" class="jcarousel-control-next">&rsaquo;</a>
+
+        <!--<button id="mirror">Mirror my screen</button>-->
+</div>
+</div>
+</body>
+</html>
+
+
